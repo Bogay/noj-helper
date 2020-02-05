@@ -1,19 +1,9 @@
-# This it title
+just add `a` and `b`  
 
-## and this is sub title
+## input
 
-```
-code segment here
-```
+a line contains two number `a` and `b`
 
-this line contains a `inline code`
+## output
 
-- un ordered list
-- un ordered list
-- un ordered list
-
-1. ordered list
-1. ordered list
-1. ordered list
-
-> quote here
+a line contains a number `a+b`

@@ -5,6 +5,7 @@ import random
 import string
 import secrets
 
+# API_BASE = 'https://noj.tw/api'
 API_BASE = 'http://localhost:8080/api'
 
 
@@ -30,7 +31,7 @@ def login_session(username, password, email=None):
 
 def submit(sess, lang, problem_id):
     print('===submission===')
-    langs = ['.c', '.cpp', '.py']
+    langs = ['c', 'cpp', 'py']
 
     # create submission
     resp = sess.post(
@@ -55,12 +56,11 @@ def submit(sess, lang, problem_id):
     print(resp.status_code)
     print(resp.text)
     assert resp.status_code == 200
-    prnit('===end===')
+    print('===end===')
 
 
 def create_problem(sess, **prob_datas):
     print('===problem===')
-    r = random_string(8)
     resp = sess.post(
         f'{API_BASE}/problem/manage',
         json={
@@ -80,16 +80,13 @@ def create_problem(sess, **prob_datas):
                 0,
             ),
             'problemName':
-            prob_datas.get('problem_name', f'prob {r}'),
+            prob_datas.get('problem_name', 'A + B problem'),
             'description':
             prob_datas.get('description') or open('prob.md').read(),
             'tags':
             prob_datas.get(
                 'tags',
-                [
-                    'test',
-                    random_string(),
-                ],
+                ['test'],
             ),
             'testCase':
             prob_datas.get(
@@ -101,8 +98,8 @@ def create_problem(sess, **prob_datas):
                     '',
                     'cases': [
                         {
-                            'input': f'{r}\n',
-                            'output': f'{r}\n',
+                            'input': '14 50\n',
+                            'output': '64\n',
                             'caseScore': 100,
                             'memoryLimit': 32768,
                             'timeLimit': 1000,
@@ -119,7 +116,8 @@ def create_problem(sess, **prob_datas):
 
 
 def get_problem_list(sess, offset, count):
-    resp = sess.get(f'{API_BASE}/problem?offset={offset}&count={count}')
+    resp = sess.get(
+        f'{API_BASE}/problem?offset={offset}&count={count}&problemId=2')
     print(resp.status_code)
     print(resp.text)
     assert resp.status_code == 200
@@ -127,21 +125,19 @@ def get_problem_list(sess, offset, count):
 
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) >= 2 else None
-    l_type = 2
-    langs = ['c', 'cpp', 'py']
-    # user = {
-    #     'username': 'first_admin',
-    #     'password': 'firstpasswordforadmin',
-    #     'email': 'i.am.first.admin@noj.tw'
-    # }
     user = {
-        'username': 'bogay',
-        'password': 'bogay',
+        'username': 'first_admin',
+        'password': 'firstpasswordforadmin',
+        'email': 'i.am.first.admin@noj.tw'
     }
+    # user = {
+    #     'username': 'bogay',
+    #     'password': 'bogay',
+    # }
 
     if cmd is None:
         with login_session(**user) as sess:
-            submit(sess, l_type, 318)
+            submit(sess, 0, 4)
     elif cmd == 'prob':
         with login_session(**user) as sess:
             create_problem(sess)
