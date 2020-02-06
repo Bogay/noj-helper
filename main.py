@@ -88,9 +88,9 @@ def create_problem(sess, **prob_datas):
                 'tags',
                 ['test'],
             ),
-            'testCase':
+            'testCaseInfo':
             prob_datas.get(
-                'testCase',
+                'testCaseInfo',
                 {
                     'language':
                     0,
@@ -98,15 +98,21 @@ def create_problem(sess, **prob_datas):
                     '',
                     'cases': [
                         {
+<<<<<<< HEAD
                             'input': '14 50\n',
                             'output': '64\n',
+=======
+>>>>>>> fix new form of problem
                             'caseScore': 100,
+                            'caseCount': 1,
                             'memoryLimit': 32768,
                             'timeLimit': 1000,
+                            'input': [f'{r}\n'],
+                            'output': [f'{r}\n'],
                         },
                     ]
                 },
-            )
+            ),
         },
     )
     print(resp.status_code)
@@ -126,9 +132,14 @@ def get_problem_list(sess, offset, count):
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) >= 2 else None
     user = {
+<<<<<<< HEAD
         'username': 'first_admin',
         'password': 'firstpasswordforadmin',
         'email': 'i.am.first.admin@noj.tw'
+=======
+        'username': 'as535364',
+        'password': 'GGxf123120',
+>>>>>>> fix new form of problem
     }
     # user = {
     #     'username': 'bogay',
