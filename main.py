@@ -98,11 +98,6 @@ def create_problem(sess, **prob_datas):
                     '',
                     'cases': [
                         {
-<<<<<<< HEAD
-                            'input': '14 50\n',
-                            'output': '64\n',
-=======
->>>>>>> fix new form of problem
                             'caseScore': 100,
                             'caseCount': 1,
                             'memoryLimit': 32768,
@@ -129,22 +124,14 @@ def get_problem_list(sess, offset, count):
     assert resp.status_code == 200
 
 
+def load_user(user) -> dict:
+    with open(f'user/{user}.json') as f:
+        return json.load(f)
+
+
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) >= 2 else None
-    user = {
-<<<<<<< HEAD
-        'username': 'first_admin',
-        'password': 'firstpasswordforadmin',
-        'email': 'i.am.first.admin@noj.tw'
-=======
-        'username': 'as535364',
-        'password': 'GGxf123120',
->>>>>>> fix new form of problem
-    }
-    # user = {
-    #     'username': 'bogay',
-    #     'password': 'bogay',
-    # }
+    user = load_user('first_admin')
 
     if cmd is None:
         with login_session(**user) as sess:
