@@ -4,6 +4,9 @@ import sys
 import random
 import string
 import secrets
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
 
 # API_BASE = 'https://noj.tw/api'
 API_BASE = 'http://localhost:8080/api'
@@ -30,7 +33,7 @@ def login_session(username, password, email=None):
 
 
 def submit(sess, lang, problem_id):
-    print('===submission===')
+    logging.info('===submission===')
     langs = ['c', 'cpp', 'py']
 
     # create submission
@@ -41,8 +44,10 @@ def submit(sess, lang, problem_id):
             'problemId': problem_id
         },
     )
+
+    logging.debug(f'raw resp: {resp.text}')
     rj = json.loads(resp.text)
-    print(rj)
+    logging.info(rj)
     rj = rj['data']
     assert resp.status_code == 200
 
@@ -53,14 +58,15 @@ def submit(sess, lang, problem_id):
             'code': ('scnuoqd414fwq', open(f'{langs[lang]}-code.zip', 'rb'))
         },
     )
-    print(resp.status_code)
-    print(resp.text)
+    logging.info(resp.status_code)
+    logging.info(resp.text)
     assert resp.status_code == 200
-    print('===end===')
+    logging.info('===end===')
 
 
 def create_problem(sess, **prob_datas):
-    print('===problem===')
+    logging.info('===problem===')
+    r = secrets.token_hex()
     resp = sess.post(
         f'{API_BASE}/problem/manage',
         json={
@@ -110,17 +116,17 @@ def create_problem(sess, **prob_datas):
             ),
         },
     )
-    print(resp.status_code)
-    print(resp.text)
+    logging.info(resp.status_code)
+    logging.info(resp.text)
     assert resp.status_code == 200
-    print('===end===')
+    logging.info('===end===')
 
 
 def get_problem_list(sess, offset, count):
     resp = sess.get(
         f'{API_BASE}/problem?offset={offset}&count={count}&problemId=2')
-    print(resp.status_code)
-    print(resp.text)
+    logging.info(resp.status_code)
+    logging.info(resp.text)
     assert resp.status_code == 200
 
 
@@ -135,7 +141,7 @@ if __name__ == "__main__":
 
     if cmd is None:
         with login_session(**user) as sess:
-            submit(sess, 0, 4)
+            submit(sess, 1, 3)
     elif cmd == 'prob':
         with login_session(**user) as sess:
             create_problem(sess)
