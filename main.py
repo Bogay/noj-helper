@@ -64,56 +64,71 @@ def submit(sess, lang, problem_id):
     logging.info('===end===')
 
 
+def problem_description():
+    return {
+        'description': 'fake a + b problem',
+        'input': 'test',
+        'output': 'test',
+        'sampleInput': ['foo'],
+        'sampleOutput': ['bar'],
+        'hint': 'hint',
+    }
+
+
+def problem_testcase():
+    r = secrets.token_hex()
+    return {
+        'language':
+        0,
+        'fillInTemplate':
+        '',
+        'cases': [
+            {
+                'caseScore': 100,
+                'caseCount': 1,
+                'memoryLimit': 32768,
+                'timeLimit': 1000,
+                'input': [f'{r}\n'],
+                'output': [f'{r}\n'],
+            },
+        ]
+    }
+
+
 def create_problem(sess, **prob_datas):
     logging.info('===problem===')
-    r = secrets.token_hex()
     resp = sess.post(
         f'{API_BASE}/problem/manage',
         json={
-            'courses':
-            prob_datas.get(
+            'courses': prob_datas.get(
                 'courses',
                 ['Public'],
             ),
-            'status':
-            prob_datas.get(
+            'status': prob_datas.get(
                 'status',
                 0,
             ),
-            'type':
-            prob_datas.get(
+            'type': prob_datas.get(
                 'type',
                 0,
             ),
-            'problemName':
-            prob_datas.get('problem_name', 'A + B problem'),
-            'description':
-            prob_datas.get('description') or open('prob.md').read(),
-            'tags':
-            prob_datas.get(
+            'problemName': prob_datas.get(
+                'problem_name',
+                'A + B problem',
+            ),
+            'description': prob_datas.get(
+                'description',
+                problem_description(),
+            ),
+            'tags': prob_datas.get(
                 'tags',
                 ['test'],
             ),
-            'testCaseInfo':
-            prob_datas.get(
+            'testCaseInfo': prob_datas.get(
                 'testCaseInfo',
-                {
-                    'language':
-                    0,
-                    'fillInTemplate':
-                    '',
-                    'cases': [
-                        {
-                            'caseScore': 100,
-                            'caseCount': 1,
-                            'memoryLimit': 32768,
-                            'timeLimit': 1000,
-                            'input': [f'{r}\n'],
-                            'output': [f'{r}\n'],
-                        },
-                    ]
-                },
+                problem_testcase(),
             ),
+            'handwritten': False,
         },
     )
     logging.info(resp.status_code)
@@ -141,7 +156,7 @@ if __name__ == "__main__":
 
     if cmd is None:
         with login_session(**user) as sess:
-            submit(sess, 1, 3)
+            submit(sess, 1, 4)
     elif cmd == 'prob':
         with login_session(**user) as sess:
             create_problem(sess)
