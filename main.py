@@ -1,3 +1,4 @@
+#!.venv/bin/python
 import requests as rq
 import json
 import sys
@@ -5,6 +6,7 @@ import random
 import string
 import secrets
 import logging
+import click
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -32,7 +34,7 @@ def login_session(username, password, email=None):
     return sess
 
 
-def submit(sess, lang, problem_id):
+def _submit(sess, lang, problem_id):
     logging.info('===submission===')
     langs = ['c', 'cpp', 'py']
 
@@ -150,16 +152,45 @@ def load_user(user) -> dict:
         return json.load(f)
 
 
-if __name__ == "__main__":
-    cmd = sys.argv[1] if len(sys.argv) >= 2 else None
-    user = load_user('first_admin')
+@click.group()
+@click.option(
+    '--user',
+    '-u',
+    default='first_admin',
+    help='which user to login',
+)
+@click.pass_context
+def command_entry(ctx, user):
+    '''
+    the entry of noj cli(?
+    '''
+    ctx.ensure_object(dict)
+    ctx.obj['user'] = load_user(user)
 
-    if cmd is None:
-        with login_session(**user) as sess:
-            submit(sess, 1, 4)
-    elif cmd == 'prob':
-        with login_session(**user) as sess:
-            create_problem(sess)
-    elif cmd == 'prob-list':
-        with login_session(**user) as sess:
-            get_problem_list(sess, 0, -1)
+
+@command_entry.command()
+@click.argument('problem_id', type=int)
+@click.argument('language', type=int)
+@click.pass_obj
+def submit(ctx_obj, language, problem_id):
+    with login_session(**ctx_obj['user']) as sess:
+        _submit(sess, language, problem_id)
+
+
+@command_entry.command()
+@click.pass_obj
+def prob(ctx_obj):
+    with login_session(**ctx_obj['user']) as sess:
+        create_problem(sess)
+
+
+if __name__ == "__main__":
+    try:
+        admin = load_user('first_admin')
+        with login_session(**admin) as sess:
+            pass
+    except rq.ConnectionError:
+        print('Can not connect to NOJ API.\n'
+              'Do you set the current URL? or the NOJ is up now?')
+        exit(0)
+    command_entry()
