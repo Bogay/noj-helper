@@ -195,6 +195,6 @@ if __name__ == "__main__":
             pass
     except rq.ConnectionError:
         print('Can not connect to NOJ API.\n'
-              'Do you set the current URL? or the NOJ is up now?')
+              'Do you set the correct URL? or the NOJ is up now?')
         exit(0)
     command_entry()
