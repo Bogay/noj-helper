@@ -7,6 +7,9 @@ import string
 import secrets
 import logging
 import click
+import csv
+
+from pathlib import Path
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -30,6 +33,7 @@ def login_session(username, password, email=None):
 
     if resp.status_code != 200:
         sess.close()
+        logging.error(resp.text)
         return None
     return sess
 
@@ -55,8 +59,7 @@ def _submit(sess, lang, problem_id):
 
     # upload source
     resp = sess.put(
-        f'{API_BASE}/submission/{rj["submissionId"]}'
-        f'?token={rj["token"]}',
+        f'{API_BASE}/submission/{rj["submissionId"]}',
         files={
             'code': ('scnuoqd414fwq', open(f'{langs[lang]}-code.zip', 'rb'))
         },
@@ -186,6 +189,31 @@ def submit(ctx_obj, language, problem_id):
 def prob(ctx_obj):
     with login_session(**ctx_obj['user']) as sess:
         create_problem(sess)
+
+
+@command_entry.command()
+@click.argument('users')
+def create_user(users):
+    '''
+    create users from file
+    '''
+    users = Path(users)
+    if not users.exists():
+        print(f'{users} not found!')
+        return
+
+    if users.suffix == '.csv':
+        with open(users) as f:
+            _users = csv.DictReader(f)
+        users = _users
+    elif users.suffix == '.json':
+        users = json.loads(users.read_text())
+    elif users.suffix == '.xls':
+        print('haven\'t implemented')
+        return
+
+    for u in users:
+        rq.post(f'{API_BASE}/auth/signup', json=u)
 
 
 if __name__ == "__main__":
