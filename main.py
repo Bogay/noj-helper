@@ -55,7 +55,8 @@ def _submit(sess, lang, problem_id):
 
     # upload source
     resp = sess.put(
-        f'{API_BASE}/submission/{rj["submissionId"]}?token={rj["token"]}',
+        f'{API_BASE}/submission/{rj["submissionId"]}'
+        f'?token={rj["token"]}',
         files={
             'code': ('scnuoqd414fwq', open(f'{langs[lang]}-code.zip', 'rb'))
         },
@@ -141,7 +142,10 @@ def create_problem(sess, **prob_datas):
 
 def get_problem_list(sess, offset, count):
     resp = sess.get(
-        f'{API_BASE}/problem?offset={offset}&count={count}&problemId=2')
+        f'{API_BASE}/problem'
+        f'?offset={offset}'
+        f'&count={count}'
+        '&problemId=2', )
     logging.info(resp.status_code)
     logging.info(resp.text)
     assert resp.status_code == 200
