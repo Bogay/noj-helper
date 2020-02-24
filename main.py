@@ -108,7 +108,7 @@ def problem_testcase():
         '',
         'tasks': [
             {
-                'caseScore': 100,
+                'taskScore': 100,
                 'caseCount': 1,
                 'memoryLimit': 32768,
                 'timeLimit': 1000,
