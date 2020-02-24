@@ -8,8 +8,10 @@ import secrets
 import logging
 import click
 import csv
+import tempfile
 
 from pathlib import Path
+from zipfile import ZipFile, is_zipfile
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -38,7 +40,14 @@ def login_session(username, password, email=None):
     return sess
 
 
-def _submit(sess, lang, problem_id):
+def _submit(sess, lang, problem_id, code=None):
+    '''
+    submit `problem_id` with language `lang`
+    if `code` is None, use default source decided by `lang`
+
+    Args:
+        code: the code path
+    '''
     logging.info('===submission===')
     langs = ['c', 'cpp', 'py']
 
@@ -57,12 +66,22 @@ def _submit(sess, lang, problem_id):
     rj = rj['data']
     assert resp.status_code == 200
 
+    # open code file
+    if code is None:
+        # use default
+        code = open(f'{langs[lang]}-code.zip', 'rb')
+    else:
+        # check zip
+        if not is_zipfile(code):
+            logging.warning('you are submitting a non-zip file.')
+        # if it is the path string
+        if 'read' not in code:
+            code = open(code, 'rb')
+
     # upload source
     resp = sess.put(
         f'{API_BASE}/submission/{rj["submissionId"]}',
-        files={
-            'code': ('scnuoqd414fwq', open(f'{langs[lang]}-code.zip', 'rb'))
-        },
+        files={'code': ('scnuoqd414fwq', code)},
     )
     logging.info(resp.status_code)
     logging.info(resp.text)
@@ -82,23 +101,39 @@ def problem_description():
 
 
 def problem_testcase():
-    r = secrets.token_hex()
     return {
         'language':
         0,
         'fillInTemplate':
         '',
-        'cases': [
+        'tasks': [
             {
                 'caseScore': 100,
                 'caseCount': 1,
                 'memoryLimit': 32768,
                 'timeLimit': 1000,
-                'input': [f'{r}\n'],
-                'output': [f'{r}\n'],
             },
         ]
     }
+
+
+def make_testcase_zip(tasks=[1]) -> tempfile.TemporaryFile:
+    '''
+    make a dummy testcase zip file
+
+    Args:
+        tasks: list contains case count for each task
+    '''
+    tmp_zip = tempfile.TemporaryFile('wb+')
+    with ZipFile(tmp_zip, 'w') as zf:
+        for i, cnt in enumerate(tasks):
+            for j in range(cnt):
+                name = f'{i:02d}{j:02d}'
+                v = random_string(48)
+                zf.writestr(f'{name}.in', v)
+                zf.writestr(f'{name}.out', v)
+    tmp_zip.seek(0)
+    return tmp_zip
 
 
 def create_problem(sess, **prob_datas):
@@ -140,6 +175,18 @@ def create_problem(sess, **prob_datas):
     logging.info(resp.status_code)
     logging.info(resp.text)
     assert resp.status_code == 200
+    logging.info('===upload testcase===')
+    problem_id = json.loads(resp.text)['data']['problemId']
+    with make_testcase_zip() as test_case:
+        resp = sess.put(
+            f'{API_BASE}/problem/manage/{problem_id}',
+            files={
+                'case': ('test_case', test_case),
+            },
+        )
+    logging.info(resp.status_code)
+    logging.info(resp.text)
+    assert resp.status_code == 200
     logging.info('===end===')
 
 
@@ -178,10 +225,15 @@ def command_entry(ctx, user):
 @command_entry.command()
 @click.argument('problem_id', type=int)
 @click.argument('language', type=int)
+@click.option(
+    '--code',
+    '-c',
+    help='the code path which will be submitted',
+)
 @click.pass_obj
-def submit(ctx_obj, language, problem_id):
+def submit(ctx_obj, language, problem_id, code):
     with login_session(**ctx_obj['user']) as sess:
-        _submit(sess, language, problem_id)
+        _submit(sess, language, problem_id, code)
 
 
 @command_entry.command()
