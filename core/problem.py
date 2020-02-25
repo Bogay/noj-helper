@@ -3,6 +3,7 @@ import tempfile
 import requests as rq
 import json
 from zipfile import ZipFile
+from pprint import pprint
 from .util import API_BASE, random_string
 
 
@@ -104,12 +105,14 @@ def create_problem(sess, **prob_datas):
     logging.info('===end===')
 
 
-def get_problem_list(sess, offset, count):
+def get_problem_list(sess, offset=0, count=-1, name=''):
     resp = sess.get(
         f'{API_BASE}/problem'
         f'?offset={offset}'
         f'&count={count}'
-        '&problemId=2', )
+        f'&name={name}', )
     logging.info(resp.status_code)
     logging.info(resp.text)
     assert resp.status_code == 200
+    probs = json.loads(resp.text)['data']
+    pprint(probs)

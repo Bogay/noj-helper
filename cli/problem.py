@@ -26,3 +26,22 @@ def create(ctx_obj, name):
             sess,
             problem_name=name,
         )
+
+
+@problem.command()
+@click.option(
+    '--name',
+    '-n',
+    help='search for problem of `name`',
+    default='',
+)
+@click.pass_obj
+def list(ctx_obj, name):
+    '''
+    get a list of problems
+    '''
+    with login_session(**ctx_obj['user']) as sess:
+        get_problem_list(
+            sess,
+            name=name,
+        )
